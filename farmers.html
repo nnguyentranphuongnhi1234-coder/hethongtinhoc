@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý Nông dân & Hợp tác xã</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #e0f0f3;
+  color: #333;
+}
+header {
+  background: #264d4d;
+  color: #f0f0f0;
+  padding: 20px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+header h1 { margin: 0; font-size: 28px; font-weight: 600; letter-spacing: 1px; }
+header i.logo-icon { font-size: 32px; color: #8bc34a; animation: logoBounce 1s infinite alternate; }
+@keyframes logoBounce { 0% {transform: scale(1);} 100% {transform: scale(1.1);} }
+
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  background: #4b636e;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  transition: all 0.3s;
+}
+.back-btn:hover { transform: scale(1.05); }
+.back-btn:hover i { transform: translateX(-3px); }
+
+.container {
+  max-width: 1200px;
+  margin: 25px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.form-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+.form-group input, .form-group select {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+.form-group input:focus, .form-group select:focus {
+  outline: none;
+  border-color: #26a69a;
+  box-shadow: 0 0 8px rgba(38,166,154,0.4);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+.controls input, .controls select {
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  flex: 1;
+  transition: all 0.3s ease;
+}
+.controls input:focus, .controls select:focus {
+  outline: none;
+  border-color: #26a69a;
+  box-shadow: 0 0 8px rgba(38,166,154,0.3);
+}
+
+/* BUTTON */
+button {
+  padding: 10px 18px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+button i { transition: transform 0.3s ease; }
+button:hover i { transform: rotate(15deg); }
+
+button.add { background: #6a11cb; color: #fff; }
+button.add:hover { transform: scale(1.08); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
+button.confirm { background: #43e97b; color: #fff; }
+button.confirm:hover { transform: scale(1.08); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
+button.cancel { background: #ff5858; color: #fff; }
+button.cancel:hover { transform: scale(1.08); box-shadow:0 8px 20px rgba(0,0,0,0.25);}
+button.delete { background: #f85032; color: #fff; }
+button.delete:hover { transform: scale(1.08); box-shadow:0 8px 20px rgba(0,0,0,0.25); }
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  font-size: 14px;
+}
+table th, table td { padding: 14px; text-align: left; transition: all 0.3s ease; }
+table th { background: #26a69a; color: #f0f0f0; letter-spacing: 0.5px; }
+table tr:nth-child(even) { background: #f1f8f6; }
+table tr:hover { background: #d1e8e2; transform: scale(1.01); box-shadow:0 4px 12px rgba(0,0,0,0.1); }
+tr.fade-in { animation: fadeIn 0.6s ease forwards; opacity:0; }
+@keyframes fadeIn { to { opacity:1; } }
+
+.tag { display: inline-block; padding: 5px 12px; border-radius: 16px; font-size: 12px; color: white; font-weight: 500; margin:2px;}
+.farmer { background: #43a047; }
+.coop { background: #0288d1; }
+.certified { background: #fb8c00; }
+.not-certified { background: #757575; }
+.cert-vietgap { background: #ff9800; }
+.cert-globalgap { background: #8bc34a; }
+</style>
+</head>
+<body>
+
+<a href="javascript:history.back()" class="back-btn"><i class="fa fa-arrow-left"></i> Quay lại</a>
+
+<header>
+  <i class="fa fa-seedling logo-icon"></i>
+  <h1>Quản lý Nông dân & Hợp tác xã</h1>
+</header>
+
+<div class="container">
+  <div class="form-group">
+    <select id="typeInput">
+      <option value="farmer">👩‍🌾 Nông dân</option>
+      <option value="coop">🏢 Hợp tác xã</option>
+    </select>
+    <input type="text" id="nameInput" placeholder="Tên">
+    <input type="text" id="addressInput" placeholder="Địa chỉ">
+    <input type="text" id="productInput" placeholder="Sản phẩm chính">
+    <button class="add" onclick="addEntry()"><i class="fa fa-plus"></i> Thêm</button>
+  </div>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="🔍 Tìm theo tên...">
+    <select id="filterSelect">
+      <option value="all">📋 Tất cả</option>
+      <option value="farmer">👩‍🌾 Nông dân</option>
+      <option value="coop">🏢 Hợp tác xã</option>
+    </select>
+  </div>
+
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Tên</th>
+        <th>Loại</th>
+        <th>Địa chỉ</th>
+        <th>Sản phẩm chính</th>
+        <th>Chứng nhận</th>
+        <th>Hành động</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+const data = [
+  { name: "Nguyễn Văn A", type: "farmer", address: "Đắk Lắk", product: "Cà phê", cert: "VietGAP" },
+  { name: "Trần Thị B", type: "farmer", address: "Lâm Đồng", product: "Chè", cert: "GlobalGAP" },
+  { name: "Lê Văn C", type: "farmer", address: "Gia Lai", product: "Tiêu", cert: "VietGAP" },
+  { name: "Phạm Văn D", type: "farmer", address: "Kon Tum", product: "Điều", cert: "Chưa" },
+  { name: "Hoàng Thị E", type: "farmer", address: "Sơn La", product: "Ngô", cert: "GlobalGAP" },
+  { name: "HTX Nông nghiệp Xanh", type: "coop", address: "Đắk Lắk", product: "Cà phê sạch", cert: "VietGAP" },
+  { name: "HTX Cây ăn quả Y", type: "coop", address: "Tiền Giang", product: "Xoài", cert: "Chưa" },
+  { name: "HTX Rau Sạch Z", type: "coop", address: "Hà Nội", product: "Rau sạch", cert: "GlobalGAP" },
+  { name: "HTX Trái Cây T", type: "coop", address: "Bình Dương", product: "Thanh long", cert: "Chưa" },
+  { name: "HTX Lúa Gạo U", type: "coop", address: "An Giang", product: "Gạo", cert: "VietGAP" }
+];
+
+const tableBody = document.querySelector("#dataTable tbody");
+const searchInput = document.getElementById("searchInput");
+const filterSelect = document.getElementById("filterSelect");
+
+function renderTable() {
+  const searchText = searchInput.value.toLowerCase();
+  const filterValue = filterSelect.value;
+  tableBody.innerHTML = "";
+  data.filter(item => {
+    const matchText = item.name.toLowerCase().includes(searchText);
+    const matchType = filterValue === "all" || item.type === filterValue;
+    return matchText && matchType;
+  }).forEach((item, index) => {
+    const row = document.createElement("tr");
+    row.classList.add("fade-in");
+    let certClass = item.cert === "VietGAP" ? "cert-vietgap" : item.cert === "GlobalGAP" ? "cert-globalgap" : "not-certified";
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td><span class="tag ${item.type}">${item.type==="farmer"?"Nông dân":"Hợp tác xã"}</span></td>
+      <td>${item.address}</td>
+      <td>${item.product}</td>
+      <td>
+        <span class="tag ${certClass}">${item.cert}</span>
+        <select onchange="changeCert(${index}, this.value)">
+          <option value="Chưa" ${item.cert==="Chưa"?"selected":""}>Chưa</option>
+          <option value="VietGAP" ${item.cert==="VietGAP"?"selected":""}>VietGAP</option>
+          <option value="GlobalGAP" ${item.cert==="GlobalGAP"?"selected":""}>GlobalGAP</option>
+        </select>
+      </td>
+      <td>
+        <button class="delete" onclick="deleteEntry(${index})"><i class="fa fa-trash"></i> Xóa</button>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function changeCert(index, value) { data[index].cert=value; renderTable(); }
+
+function addEntry() {
+  const type = document.getElementById("typeInput").value;
+  const name = document.getElementById("nameInput").value.trim();
+  const address = document.getElementById("addressInput").value.trim();
+  const product = document.getElementById("productInput").value.trim();
+  if (!name||!address||!product){ alert("Vui lòng nhập đầy đủ thông tin!"); return; }
+  data.push({name,type,address,product,cert:"Chưa"});
+  document.getElementById("nameInput").value="";
+  document.getElementById("addressInput").value="";
+  document.getElementById("productInput").value="";
+  document.getElementById("typeInput").value="farmer";
+  renderTable();
+}
+
+function deleteEntry(index){ if(confirm("Bạn có chắc muốn xóa mục này?")){ data.splice(index,1); renderTable(); } }
+
+searchInput.addEventListener("input",renderTable);
+filterSelect.addEventListener("change",renderTable);
+
+renderTable();
+</script>
+
+</body>
+</html>
