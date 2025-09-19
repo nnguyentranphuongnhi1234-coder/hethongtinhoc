@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Trang Báo Cáo Thống Kê - Quản trị viên</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f7fa;
+  color: #333;
+}
+header {
+  background: #264d4d;
+  color: #f0f0f0;
+  padding: 20px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+header h1 {
+  margin: 0;
+  font-size: 28px;
+}
+header i.logo-icon {
+  font-size: 32px;
+  color: #8bc34a;
+  animation: logoBounce 1s infinite alternate;
+}
+@keyframes logoBounce {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.1); }
+}
+.container {
+  max-width: 1200px;
+  margin: 25px auto;
+  padding: 25px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+h2 {
+  margin-top: 0;
+  color: #264d4d;
+  margin-bottom: 15px;
+}
+/* Bố cục biểu đồ chuyên nghiệp */
+.chart-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+.chart-container {
+  flex: 1 1 45%; /* hai biểu đồ / hàng */
+  min-width: 280px;
+  background: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.chart-container canvas {
+  height: 250px !important; /* kích thước biểu đồ nhỏ lại */
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+table th, table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+table th {
+  background: #26a69a;
+  color: #fff;
+}
+.status-pending { color: #9e9e9e; font-weight: 600; }
+.status-processing { color: #ffb74d; font-weight: 600; }
+.status-done { color: #4db6ac; font-weight: 600; }
+.cert-vietgap { color: #ff9800; font-weight: 600; }
+.cert-globalgap { color: #8bc34a; font-weight: 600; }
+.cert-none { color: #757575; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <i class="fa fa-chart-bar logo-icon"></i>
+  <h1>Báo cáo thống kê - Quản trị viên</h1>
+</header>
+
+<div class="container">
+  <h2>Thống kê tổng quan</h2>
+  <div class="chart-grid">
+    <div class="chart-container">
+      <canvas id="typeChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="processChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="shipChart"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="certChart"></canvas>
+    </div>
+  </div>
+
+  <h2>Chi tiết lô hàng</h2>
+  <table id="lotTable">
+    <thead>
+      <tr>
+        <th>Mã lô</th>
+        <th>Loại</th>
+        <th>Số lượng</th>
+        <th>Xuất xứ</th>
+        <th>Giao đến</th>
+        <th>Shipper</th>
+        <th>Chứng nhận</th>
+        <th>Chế biến</th>
+        <th>Vận chuyển</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<script>
+// Dữ liệu mẫu lô hàng
+const lots = [
+  {lot:"L001", type:"Cà phê", qty:100, origin:"Đắk Lắk", dest:"Nhà máy A", shipper:"Nguyễn Văn A", cert:"VietGAP", process:"Chưa chế biến", ship:"Chưa gửi"},
+  {lot:"L002", type:"Hạt điều", qty:80, origin:"Bình Phước", dest:"Kho B", shipper:"Trần Thị B", cert:"GlobalGAP", process:"Đang chế biến", ship:"Đang vận chuyển"},
+  {lot:"L003", type:"Cacao", qty:120, origin:"Gia Lai", dest:"Nhà máy C", shipper:"Lê Văn C", cert:"VietGAP", process:"Hoàn tất", ship:"Đã giao"},
+  {lot:"L004", type:"Ngô", qty:200, origin:"Sơn La", dest:"Kho D", shipper:"Phạm Thị D", cert:"Chưa", process:"Chưa chế biến", ship:"Chưa gửi"},
+  {lot:"L005", type:"Tiêu", qty:50, origin:"Kon Tum", dest:"Nhà máy E", shipper:"Hoàng Văn E", cert:"GlobalGAP", process:"Đang chế biến", ship:"Đang vận chuyển"},
+  {lot:"L006", type:"Gạo", qty:300, origin:"An Giang", dest:"Kho F", shipper:"Nguyễn Thị F", cert:"VietGAP", process:"Chưa chế biến", ship:"Chưa gửi"}
+];
+
+// Render bảng chi tiết
+const tableBody = document.querySelector("#lotTable tbody");
+function renderTable(){
+  tableBody.innerHTML = "";
+  lots.forEach(lot=>{
+    const row = document.createElement("tr");
+    let certClass = lot.cert==="VietGAP"?"cert-vietgap":lot.cert==="GlobalGAP"?"cert-globalgap":"cert-none";
+    let processClass = lot.process==="Chưa chế biến"?"status-pending":lot.process==="Đang chế biến"?"status-processing":"status-done";
+    let shipClass = lot.ship==="Chưa gửi"?"status-pending":lot.ship==="Đang vận chuyển"?"status-processing":"status-done";
+
+    row.innerHTML = `
+      <td>${lot.lot}</td>
+      <td>${lot.type}</td>
+      <td>${lot.qty}</td>
+      <td>${lot.origin}</td>
+      <td>${lot.dest}</td>
+      <td>${lot.shipper}</td>
+      <td class="${certClass}">${lot.cert}</td>
+      <td class="${processClass}">${lot.process}</td>
+      <td class="${shipClass}">${lot.ship}</td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+renderTable();
+
+// Thống kê biểu đồ
+function countByField(field){
+  return lots.reduce((acc, lot)=>{
+    const key = lot[field];
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+// Loại sản phẩm
+const typeData = countByField("type");
+new Chart(document.getElementById("typeChart"),{
+  type:'bar',
+  data:{
+    labels: Object.keys(typeData),
+    datasets:[{label:'Số lô', data:Object.values(typeData), backgroundColor:'#26a69a'}]
+  },
+  options:{
+    plugins:{title:{display:true,text:'Số lượng lô theo loại sản phẩm', font:{size:16}}},
+    responsive:true,
+    maintainAspectRatio:false,
+    scales:{y:{beginAtZero:true}}
+  }
+});
+
+// Trạng thái chế biến
+const processData = countByField("process");
+new Chart(document.getElementById("processChart"),{
+  type:'pie',
+  data:{
+    labels: Object.keys(processData),
+    datasets:[{label:'Lô hàng', data:Object.values(processData), backgroundColor:['#9e9e9e','#ffb74d','#4db6ac'] }]
+  },
+  options:{
+    plugins:{title:{display:true,text:'Trạng thái chế biến', font:{size:16}}},
+    responsive:true,
+    maintainAspectRatio:false
+  }
+});
+
+// Trạng thái vận chuyển
+const shipData = countByField("ship");
+new Chart(document.getElementById("shipChart"),{
+  type:'pie',
+  data:{
+    labels: Object.keys(shipData),
+    datasets:[{label:'Lô hàng', data:Object.values(shipData), backgroundColor:['#e57373','#4dd0e1','#81c784'] }]
+  },
+  options:{
+    plugins:{title:{display:true,text:'Trạng thái vận chuyển', font:{size:16}}},
+    responsive:true,
+    maintainAspectRatio:false
+  }
+});
+
+// Chứng nhận
+const certData = countByField("cert");
+new Chart(document.getElementById("certChart"),{
+  type:'doughnut',
+  data:{
+    labels: Object.keys(certData),
+    datasets:[{label:'Lô hàng', data:Object.values(certData), backgroundColor:['#757575','#ff9800','#8bc34a'] }]
+  },
+  options:{
+    plugins:{title:{display:true,text:'Chứng nhận sản phẩm', font:{size:16}}},
+    responsive:true,
+    maintainAspectRatio:false
+  }
+});
+</script>
+
+</body>
+</html>
