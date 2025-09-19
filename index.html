@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang chính - Hệ thống Quản lý Chuỗi Cung ứng</title>
+  <!-- Gọi Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      margin: 0;
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      overflow-x: hidden;
+    }
+
+    /* 🔝 Navbar */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 40px;
+      background: #00695c;
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      animation: slideDown 0.8s ease;
+    }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(0); }
+    }
+
+    nav h2 {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    nav h2 i {
+      color: #ffd54f;
+    }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav ul li a {
+      text-decoration: none;
+      color: white;
+      font-weight: bold;
+      transition: color 0.3s;
+    }
+
+    nav ul li a:hover {
+      color: #ffd54f;
+    }
+
+    /* 🎯 Hero */
+    .hero {
+      background: linear-gradient(135deg, #004d40, #26a69a);
+      color: white;
+      text-align: center;
+      padding: 80px 20px;
+      animation: fadeIn 1.5s ease;
+    }
+
+    .hero h1 {
+      font-size: 42px;
+      margin-bottom: 15px;
+      animation: zoomIn 1s ease;
+    }
+
+    .hero p {
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto;
+      animation: fadeInUp 1.2s ease;
+    }
+
+    /* 📦 Features */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 40px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeInUp 1s forwards;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.2s; }
+    .card:nth-child(2) { animation-delay: 0.4s; }
+    .card:nth-child(3) { animation-delay: 0.6s; }
+    .card:nth-child(4) { animation-delay: 0.8s; }
+
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    }
+
+    .card i {
+      font-size: 40px;
+      margin-bottom: 15px;
+      color: #00695c;
+      display: inline-block;
+      animation: bounceIn 1s;
+    }
+
+    .card:hover i {
+      color: #26a69a;
+      transform: rotate(10deg) scale(1.1);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #00695c;
+    }
+
+    .card a {
+      display: inline-block;
+      margin-top: 15px;
+      padding: 10px 18px;
+      background: #00695c;
+      color: white;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: background 0.3s;
+    }
+
+    .card a:hover {
+      background: #004d40;
+    }
+
+    /* 📝 About */
+    .about {
+      padding: 40px;
+      background: #e0f2f1;
+      text-align: center;
+      animation: fadeIn 1.2s ease;
+    }
+
+    .about h2 {
+      margin-top: 0;
+      color: #004d40;
+    }
+
+    .about p {
+      max-width: 800px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* 📌 Footer */
+    footer {
+      background: #004d40;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      animation: fadeIn 1.5s ease;
+    }
+
+    /* ✨ Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes zoomIn {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.1); opacity: 1; }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <!-- 🔝 Navbar -->
+  <nav>
+    <h2><i class="fas fa-cubes"></i> Chuỗi Cung Ứng</h2>
+    <ul>
+      <li><a href="index.html"><i class="fas fa-home"></i> Trang chủ</a></li>
+      <li><a href="farmers.html"><i class="fas fa-tractor"></i> Nông dân & HTX</a></li>
+      <li><a href="batches.html"><i class="fas fa-boxes"></i> Lô hàng</a></li>
+      <li><a href="qr.html"><i class="fas fa-qrcode"></i> QR Code</a></li>
+      <li><a href="reports.html"><i class="fas fa-chart-line"></i> Báo cáo</a></li>
+    </ul>
+  </nav>
+
+  <!-- 🎯 Hero -->
+  <section class="hero">
+    <h1><i class="fas fa-network-wired"></i> Hệ thống Quản lý Chuỗi Cung ứng</h1>
+    <p>Minh bạch – Chính xác – Hiện đại. Truy xuất nguồn gốc dễ dàng qua Blockchain và QR Code.</p>
+  </section>
+
+  <!-- 📦 Features -->
+  <section class="features">
+    <div class="card">
+      <i class="fas fa-seedling"></i>
+      <h3>Nông dân & HTX</h3>
+      <p>Quản lý thông tin nông dân, hợp tác xã và chứng nhận.</p>
+      <a href="farmers.html">Xem chi tiết</a>
+    </div>
+    <div class="card">
+      <i class="fas fa-box"></i>
+      <h3>Lô hàng</h3>
+      <p>Theo dõi tình trạng đóng gói, chế biến và vận chuyển.</p>
+      <a href="batches.html">Xem chi tiết</a>
+    </div>
+    <div class="card">
+      <i class="fas fa-qrcode"></i>
+      <h3>QR Code</h3>
+      <p>Khách hàng quét QR để truy xuất nguồn gốc sản phẩm.</p>
+      <a href="qr.html">Xem chi tiết</a>
+    </div>
+    <div class="card">
+      <i class="fas fa-chart-bar"></i>
+      <h3>Báo cáo</h3>
+      <p>Thống kê dữ liệu toàn chuỗi cung ứng và hiệu suất.</p>
+      <a href="reports.html">Xem chi tiết</a>
+    </div>
+  </section>
+
+  <!-- 📝 About -->
+  <section class="about">
+    <h2><i class="fas fa-info-circle"></i> Về hệ thống</h2>
+    <p>
+      Hệ thống được xây dựng nhằm hỗ trợ minh bạch hóa chuỗi cung ứng nông sản.
+      Tích hợp công nghệ Blockchain giúp đảm bảo tính xác thực và chống gian lận dữ liệu.
+      Người tiêu dùng dễ dàng kiểm tra chất lượng, nguồn gốc sản phẩm qua QR Code.
+    </p>
+  </section>
+
+  <!-- 📌 Footer -->
+  <footer>
+    <p><i class="fas fa-envelope"></i> © 2025 Chuỗi Cung Ứng. Liên hệ: support@example.com</p>
+  </footer>
+</body>
+</html>
