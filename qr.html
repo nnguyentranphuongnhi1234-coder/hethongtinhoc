@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Quản lý QR Code</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+<style>
+body {font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif; margin:0; padding:0; background:#e0f0f3; color:#333;}
+header {background:#264d4d; color:#f0f0f0; padding:20px 0; text-align:center; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+header h1 {margin:0; font-size:28px; font-weight:600;}
+header i.logo-icon {font-size:32px; color:#8bc34a; animation:logoBounce 1s infinite alternate;}
+@keyframes logoBounce {0%{transform:scale(1);}100%{transform:scale(1.1);}}
+.container {max-width:1200px; margin:25px auto; padding:25px; background:#fff; border-radius:16px; box-shadow:0 8px 20px rgba(0,0,0,0.1);}
+.controls {display:flex; flex-wrap:wrap; gap:15px; margin-bottom:25px;}
+.controls input {flex:1; padding:12px; border-radius:10px; border:1px solid #ccc; font-size:15px;}
+.controls input:focus {outline:none; border-color:#26a69a; box-shadow:0 0 8px rgba(38,166,154,0.4);}
+table{width:100%; border-collapse:collapse; margin-top:15px; font-size:14px;}
+table th, table td{padding:14px; text-align:left; transition:all 0.3s;}
+table th{background:#26a69a; color:#f0f0f0; letter-spacing:0.5px;}
+table tr:nth-child(even){background:#f1f8f6;}
+table tr:hover{background:#d1e8e2; transform:scale(1.01); box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+.tag{display:inline-block; padding:5px 12px; border-radius:16px; font-size:12px; color:white; font-weight:500; margin:2px;}
+.cert-vietgap{background:#ff9800;} .cert-globalgap{background:#8bc34a;} .not-certified{background:#757575;}
+.status-pending{background:#9e9e9e;} .status-processing{background:#ffb74d;} .status-done{background:#4db6ac;}
+.status-notstart{background:#e57373;} .status-shipping{background:#4dd0e1;} .status-delivered{background:#81c784;}
+.qr-code{width:100px; height:100px; border:1px solid #ccc; border-radius:12px;}
+#map{height:300px; margin-top:25px; border-radius:16px; box-shadow:0 4px 12px rgba(0,0,0,0.2);}
+</style>
+</head>
+<body>
+
+<header>
+  <i class="fa fa-boxes logo-icon"></i>
+  <h1>Quản lý QR Code</h1>
+</header>
+
+<div class="container">
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="🔍 Tìm theo mã lô hoặc loại sản phẩm...">
+  </div>
+
+  <table id="dataTable">
+    <thead>
+      <tr>
+        <th>Mã lô</th>
+        <th>Loại</th>
+        <th>Số lượng</th>
+        <th>Xuất xứ</th>
+        <th>Giao đến</th>
+        <th>Shipper</th>
+        <th>Chứng nhận</th>
+        <th>Chế biến</th>
+        <th>Vận chuyển</th>
+        <th>QR Code</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="map"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrious@4.0.2/dist/qrious.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+// Dữ liệu lô hàng mẫu
+const lots = [
+  {lot:"L001", type:"Cà phê Arabica", qty:100, origin:"Đắk Lắk", destination:"Nhà máy A", shipper:"Nguyễn Văn A", cert:"VietGAP", process:"Chưa chế biến", ship:"Chưa gửi"},
+  {lot:"L002", type:"Hạt điều", qty:80, origin:"Bình Phước", destination:"Kho B", shipper:"Trần Thị B", cert:"GlobalGAP", process:"Đang chế biến", ship:"Đang vận chuyển"},
+  {lot:"L003", type:"Cacao", qty:120, origin:"Gia Lai", destination:"Nhà máy C", shipper:"Lê Văn C", cert:"VietGAP", process:"Hoàn tất", ship:"Đã giao"},
+  {lot:"L004", type:"Ngô", qty:200, origin:"Sơn La", destination:"Kho D", shipper:"Phạm Thị D", cert:"Chưa", process:"Chưa chế biến", ship:"Chưa gửi"},
+  {lot:"L005", type:"Tiêu", qty:50, origin:"Kon Tum", destination:"Nhà máy E", shipper:"Hoàng Văn E", cert:"GlobalGAP", process:"Đang chế biến", ship:"Đang vận chuyển"},
+];
+
+// Tọa độ xuất xứ
+const locations = {
+  "Đắk Lắk":[12.7,108.05], "Bình Phước":[11.75,106.8], "Gia Lai":[13.8,108.0], 
+  "Sơn La":[21.3,103.9], "Kon Tum":[14.35,107.98]
+};
+
+const tableBody = document.querySelector("#dataTable tbody");
+const searchInput = document.getElementById("searchInput");
+
+// Bản đồ
+const map = L.map('map').setView([13,107],6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
+let marker;
+
+function renderMap(lot){
+  const coords = locations[lot.origin];
+  if(coords){
+    if(marker) map.removeLayer(marker);
+    marker = L.marker(coords).addTo(map)
+      .bindPopup(`<b>${lot.lot}</b> - ${lot.type}<br>Xuất xứ: ${lot.origin}`)
+      .openPopup();
+    map.setView(coords,8);
+  }
+}
+
+// Hiển thị bảng và QR code
+function renderTable(){
+  const searchText = searchInput.value.toLowerCase();
+  tableBody.innerHTML = "";
+  lots.filter(lot => 
+    lot.lot.toLowerCase().includes(searchText) || lot.type.toLowerCase().includes(searchText)
+  ).forEach((lot,index)=>{
+    let certClass = lot.cert==="VietGAP"?"cert-vietgap":lot.cert==="GlobalGAP"?"cert-globalgap":"not-certified";
+    let processClass = lot.process==="Chưa chế biến"?"status-pending":lot.process==="Đang chế biến"?"status-processing":"status-done";
+    let shipClass = lot.ship==="Chưa gửi"?"status-notstart":lot.ship==="Đang vận chuyển"?"status-shipping":"status-delivered";
+
+    const qr = new QRious({value:JSON.stringify(lot), size:100}); // QR chứa toàn bộ thông tin minh bạch
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${lot.lot}</td>
+      <td>${lot.type}</td>
+      <td>${lot.qty}</td>
+      <td>${lot.origin}</td>
+      <td>${lot.destination}</td>
+      <td>${lot.shipper}</td>
+      <td><span class="tag ${certClass}">${lot.cert}</span></td>
+      <td><span class="tag ${processClass}">${lot.process}</span></td>
+      <td><span class="tag ${shipClass}">${lot.ship}</span></td>
+      <td><img class="qr-code" src="${qr.toDataURL()}" title="Quét để xem thông tin lô hàng"></td>
+    `;
+    row.addEventListener("click",()=>renderMap(lot));
+    tableBody.appendChild(row);
+  });
+}
+
+searchInput.addEventListener("input", renderTable);
+
+renderTable();
+</script>
+
+</body>
+</html>
